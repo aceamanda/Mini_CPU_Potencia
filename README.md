@@ -9,9 +9,14 @@
 </p>
 
 ## 💻 Pesquisa e Planejamento
+### BUSCA → DECODIFICAÇÃO → EXECUÇÃO (FETCH → DECODE → EXECUTE);
+
+### Interpretação do desafio; 
+Pré-carregar BASE=3 (tem três como base) em 0x10 (hexadecimal para o número 16) para e EXP=4 (expoente quatro) em 0x11 (hexadecimal para o número 17). Calcular
+BASE^EXP (3^4) por multiplicações via soma repetida(ou seja, 3+3+3+3+3+3+3+3+3+3+3+3). Resultado em 0x20 (hexadecimal para o número 32). Validar com: 81.
 
 ## 🚀 Implementação
-
+Utilizamos o esqueleto em C providenciado pelo professor Roni (creditos: https://github.com/0x03c1/CPU-WARS.git)
 ## ☕ Teste e Trace
 
 ## 🤝 Colaboradores
@@ -30,7 +35,7 @@ Agradecemos às seguintes pessoas que contribuíram para este projeto:
     </td>
     <td align="center">
       <a href="https://github.com/Davi-Lucena-Costa" title="Github Davi">
-        <img src="https://avatars.githubusercontent.com/u/210411385?v=4" width="100px;" alt="Foto de Davi Lucena"/><br>
+        <img src="https://avatars.githubusercontent.com/u/212424400?v=4" width="100px;" alt="Foto de Davi Lucena"/><br>
         <sub>
           <b>Davi Lucena</b>
         </sub>
