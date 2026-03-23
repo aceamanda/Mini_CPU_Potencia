@@ -7,50 +7,93 @@ uint8_t pc = 0, zf = 0, running = 1;
 int ciclo = 0;
 
 void fetch(uint8_t *op, uint8_t *a, uint8_t *b) {
-    *op = mem[pc]; *a = mem[pc+1]; *b = mem[pc+2];
+    *op = mem[pc];
+    *a  = mem[pc+1];
+    *b  = mem[pc+2];
     pc += 3;
 }
 
 void decode_execute(uint8_t op, uint8_t a, uint8_t b) {
     switch (op) {
-        case 0x01: reg[a] = mem[b]; break;
-        case 0x02: mem[b] = reg[a]; break;
-        case 0x03: reg[a] = reg[a] + reg[b]; break;
-        case 0x04: reg[a] = reg[a] - reg[b]; break;
-        case 0x05: reg[a] = b; break;
-        case 0x06: zf = (reg[a] == reg[b]) ? 1 : 0; break;
-        case 0x07: pc = a; break;
-        case 0x08: if (zf) pc = a; break;
-        case 0x09: if (!zf) pc = a; break;
-        case 0x0A: running = 0; break;
+        case 0x01: reg[a] = mem[b]; break;           // LOAD
+        case 0x02: mem[b] = reg[a]; break;           // STORE
+        case 0x03: reg[a] = reg[a] + reg[b]; break;  // ADD
+        case 0x04: reg[a] = reg[a] - reg[b]; break;  // SUB
+        case 0x05: reg[a] = b; break;                // MOV imediato
+        case 0x06: zf = (reg[a] == reg[b]) ? 1 : 0; break; // CMP
+        case 0x07: pc = a; break;                   // JMP
+        case 0x08: if (zf) pc = a; break;           // JZ
+        case 0x09: if (!zf) pc = a; break;          // JNZ
+        case 0x0A: running = 0; break;              // HALT
     }
 }
 
 void trace(uint8_t op, uint8_t a, uint8_t b) {
     const char *nomes[] = {"","LOAD","STORE","ADD",
-        "SUB","MOV","CMP","JMP","JZ","JNZ","HALT"};
-    printf("Ciclo %d: %-5s %d,%d | R0=%3d R1=%3d"
-           " R2=%3d R3=%3d | PC=%3d ZF=%d\n",
+                           "SUB","MOV","CMP","JMP","JZ","JNZ","HALT"};
+
+    printf("Ciclo %d: %-5s %d,%d | R0=%3d R1=%3d R2=%3d R3=%3d | PC=%3d ZF=%d\n",
            ciclo, nomes[op], a, b,
            reg[0], reg[1], reg[2], reg[3], pc, zf);
 }
 
-void potencia(void){
-    mem[0x00] = 0x05; mem[0x01] = 0x10; mem[0x02] = 0x03; /* MOV R10, 3 */
-    mem[0x03] = 0x05; mem[0x04] = 0x11; mem[0x05] = 0x04; /* MOV R11, 4 */
-    for(int i =0; i<mem[0x02];i++){
-        for(int j=0;j<mem[0x05];j++){
-            mem[0x06] = 0x03; mem[0x07] = 0x10; mem[0x08] = 0x011;
-        }
-    }
-    mem[0x09] = 0x0A; mem[0x0A] = 0x00; mem[0x0B] = 0x00; /* HALT */
-}
-
 int main() {
 
-    
+    mem[0x10] = 3; 
+    mem[0x11] = 4; 
 
-    // TODO: carregar programa e dados na mem[]
+    int i = 0;
+
+    mem[i++] = 0x05; mem[i++] = 0; mem[i++] = 1;
+    mem[i++] = 0x01; mem[i++] = 1; mem[i++] = 0x11;
+
+    mem[i++] = 0x05; mem[i++] = 3; mem[i++] = 1;
+
+    int loop_exp = i;
+
+    mem[i++] = 0x06; mem[i++] = 1; mem[i++] = 2; 
+    int jz_end = i;
+    mem[i++] = 0x08; mem[i++] = 0; mem[i++] = 0;
+
+
+    mem[i++] = 0x01; mem[i++] = 2; mem[i++] = 0x10;
+
+    mem[i++] = 0x05; mem[i++] = 3; mem[i++] = 0;
+
+    int loop_mul = i;
+
+    mem[i++] = 0x06; mem[i++] = 2; mem[i++] = 3;
+    int jz_end_mul = i;
+    mem[i++] = 0x08; mem[i++] = 0; mem[i++] = 0;
+
+    mem[i++] = 0x03; mem[i++] = 3; mem[i++] = 0;
+
+    mem[i++] = 0x05; mem[i++] = 0; mem[i++] = 1; 
+    mem[i++] = 0x04; mem[i++] = 2; mem[i++] = 0;
+
+    mem[i++] = 0x07; mem[i++] = loop_mul; mem[i++] = 0;
+
+   
+    int end_mul = i;
+
+    mem[i++] = 0x05; mem[i++] = 0; mem[i++] = 0;
+    mem[i++] = 0x03; mem[i++] = 0; mem[i++] = 3;
+
+    mem[i++] = 0x05; mem[i++] = 2; mem[i++] = 1;
+    mem[i++] = 0x04; mem[i++] = 1; mem[i++] = 2;
+    mem[i++] = 0x07; mem[i++] = loop_exp; mem[i++] = 0;
+
+    int end = i;
+
+   
+    mem[i++] = 0x02; mem[i++] = 0; mem[i++] = 0x20;
+
+    mem[i++] = 0x0A; mem[i++] = 0; mem[i++] = 0;
+
+    mem[jz_end + 1] = end;
+    mem[jz_end_mul + 1] = end_mul;
+
+    
     while (running && pc < 256) {
         uint8_t op, a, b;
         ciclo++;
@@ -58,5 +101,8 @@ int main() {
         decode_execute(op, a, b);
         trace(op, a, b);
     }
+
+    printf("\nResultado final (mem[0x20]) = %d\n", mem[0x20]);
+
     return 0;
 }
